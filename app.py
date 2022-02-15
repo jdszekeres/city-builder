@@ -2,7 +2,7 @@ import re
 from flask import *
 import db
 import helper
-
+import traceback
 
 app = Flask(__name__)
 app.secret_key = "134765434 4543"
@@ -46,6 +46,7 @@ def index():
             sign=sign,
             selected=sel,
             notifications=noti,
+            mode=db.get_mode(session["user"])
         )
     else:
         return redirect("/signup")
@@ -66,11 +67,16 @@ def signup():
         try:
             rid = db.get_rowid(request.form["name"])
             if db.getalldata(rid)[1] == request.form["password"]:
+                
+                if db.get_mode(request.form["name"]) == None:
+                    db.set_modex(request.form["name"])
                 session["user"] = request.form["name"]
                 return redirect("/")
             else:
                 return "incorrect password"
-        except:
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
             return "No account found"
 
     return render_template("login.html", name="login")
@@ -109,12 +115,10 @@ def day(build):
 def sell(x, y, build):
     db.sell(db.get_rowid(session["user"]), (int(x), int(y)), possible_buildings)
     return redirect("/?selected={}".format(build))
-@app.route("/settings", methods=["GET", "POST"])
-def settings():
-    if request.method == "POST":
-        print(request.form)
-        return redirect("/")
-    return render_template("settings.html")
+@app.route("/color/<out>")
+def dark_mode(out):
+    db.set_mode(session["user"], out)
+    return redirect("/")
 app.jinja_env.globals.update(enumerate=enumerate)
 app.jinja_env.globals.update(fmt=helper.human_format)
 app.run(debug=True, host="0.0.0.0", port=6870)

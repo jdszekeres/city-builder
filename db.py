@@ -9,7 +9,7 @@ user_structure = {'money':50,"buildings":[], "day": 1, "population":1}
 conn = sqlite3.connect('database.db')
 cur = conn.cursor()
 cur.execute('CREATE TABLE IF NOT EXISTS users(name text, password text,city json)')
-# cur.execute('CREATE TABLE IF NOT EXISTS settings(mode text)')
+cur.execute('CREATE TABLE IF NOT EXISTS settings(uname text, mode text)')
 conn.commit()
 def get_info(id):
     conn = sqlite3.connect('database.db')
@@ -20,6 +20,7 @@ def create_user(name, password):
     conn = sqlite3.connect('database.db')
     cur = conn.cursor()
     cur.execute("INSERT INTO users (name, password, city) values ('{0}', '{1}', '{2}')".format(name, password,json.dumps(user_structure)))
+    cur.execute("INSERT INTO settings (uname, mode) values ('{0}', '{1}')".format(name, "light"))
     conn.commit()
 def get_rowid(name):
     conn = sqlite3.connect('database.db')
@@ -88,4 +89,22 @@ def sell(id, coordinates, pb):
             del data["buildings"][v]
     data["money"] += refund
     cur.execute("UPDATE users set city='{0}' where rowid='{1}'".format(json.dumps(data), id))
+    conn.commit()
+def set_mode(id, mode):
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+    cur.execute("UPDATE settings SET mode='{0}' WHERE uname='{1}'".format(mode, id))
+    conn.commit()
+def get_mode(id):
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+    cur.execute("SELECT mode from settings where uname='{}'".format(id))
+    try:
+        return cur.fetchone()[0]
+    except:
+        return None
+def set_modex(id):
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+    cur.execute("INSERT INTO settings (uname,mode) values ('{0}', '{1}')".format(id, "light"))
     conn.commit()
