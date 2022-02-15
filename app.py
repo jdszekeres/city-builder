@@ -117,4 +117,4 @@ def settings():
     return render_template("settings.html")
 app.jinja_env.globals.update(enumerate=enumerate)
 app.jinja_env.globals.update(fmt=helper.human_format)
-app.run(debug=True)
+app.run(debug=True, host="0.0.0.0", port=6870)
